@@ -183,7 +183,7 @@ item_t kv_parse(char *text, uint64_t *i, uint64_t length, vars_t defs)
     // results on most files. Anything over 64 is almost certain to slow
     // down the kv_parse
     uint64_t size = 4;
-    object.object = calloc(sizeof(pair_t), size);
+    object.object = (pair_t *)calloc(sizeof(pair_t), size);
 
     skipws(text, i);
 
@@ -199,7 +199,7 @@ item_t kv_parse(char *text, uint64_t *i, uint64_t length, vars_t defs)
         if (object.length >= size)
         {
             size *= 2;
-            object.object = realloc(object.object, sizeof(pair_t) * size);
+            object.object = (pair_t *)realloc(object.object, sizeof(pair_t) * size);
         }
 
         dbgf("got key, at '%s'\n", text + *i);
