@@ -16,7 +16,7 @@ int main(int argc, char **argv)
         puts("");
         puts("Usage:");
         puts("\tfastkv [query]");
-        puts("\t<stdin>\tThe file to parse");
+        puts("\t<stdin>\tThe file to kv_parse");
         puts("\t<query>\tThe query. Format key.subkey.value");
     }
     else if (argc == 2)
@@ -35,14 +35,23 @@ int main(int argc, char **argv)
 
     uint64_t i = 0;
 
+    vars_t defines = {
+		.length = 3,
+		.vars = (char *[]) {
+			"X64",
+			"X86_64",
+			"LINUX"
+		}
+    };
+
     struct timeval start, end, printed;
     gettimeofday(&start, NULL);
-    item_t parsed = parse(text, &i, size);
+    item_t parsed = kv_parse(text, &i, size, defines);
     gettimeofday(&end, NULL);
     
     if (q)
     {
-        item_t result = query(parsed, q);
+        item_t result = kv_query(parsed, q);
         if (result.type == TYPE_ERROR)
         {
             fprintf(stderr, "The query failed\n");
@@ -55,7 +64,7 @@ int main(int argc, char **argv)
         }
         else if (result.type == TYPE_OBJECT)
         {
-            printitem(result, 0);
+			kv_printitem(result, 0);
             return 0;
         }
         fprintf(stderr, "The result type is something else. How did this happen?\n");
@@ -64,7 +73,7 @@ int main(int argc, char **argv)
 
 #ifndef NDEBUG
     fflush(stderr);
-    printitem(parsed, 0);
+	kv_printitem(parsed, 0);
     fflush(stdout);
 #endif
 
@@ -74,7 +83,7 @@ int main(int argc, char **argv)
     printf("Parsing took: %lu microseconds\n", microsecs);
     printf("That means %lu mb/second\n", size / microsecs);
 
-    freeitem(parsed);
+	kv_freeitem(parsed);
     free(text);
     return 0;
 }

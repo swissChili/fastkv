@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FASTKV_FASTKV_H
+#define FASTKV_FASTKV_H
 
 #include <stdint.h>
 
@@ -22,12 +23,20 @@ typedef struct pair_t
     item_t value;
 } pair_t;
 
-void printitem(item_t item, uint32_t depth);
+typedef struct vars_t
+{
+	uint64_t length;
+	char **vars;
+} vars_t;
 
-void freeitem(item_t item);
+void kv_printitem(item_t item, uint32_t depth);
 
-item_t parse(char *text, uint64_t *i, uint64_t length);
+void kv_freeitem(item_t item);
 
-item_t get(item_t where, char *q);
+item_t kv_parse(char *text, uint64_t *i, uint64_t length, vars_t defs);
 
-item_t query(item_t where, char *q);
+item_t kv_get(item_t where, char *q);
+
+item_t kv_query(item_t where, char *q);
+
+#endif
