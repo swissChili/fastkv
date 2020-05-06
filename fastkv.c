@@ -22,7 +22,7 @@
 #endif
 
 #ifndef NDEBUG
-	#define dbgf(a...) fprintf(stderr, a)
+	#define dbgf(...) fprintf(stderr, __VA_ARGS__)
 #else
 	#define dbgf // nope
 #endif
@@ -79,13 +79,13 @@ INLINE item_t parsestring(char *text, uint64_t *i)
     if (text[*i] == '"')
     {
         dbgf("text is %s, i is %ld\n", text, *i);
-        str.pointer = text + ++*i;
+        str.string = text + ++*i;
         for (; text[*i] && text[*i] != '"'; ++*i)
         {}
     }
     else
     {
-        str.pointer = text + *i;
+        str.string = text + *i;
         for (; (text[*i] > '0' && text[*i] <= 'Z') ||
                (text[*i] >= 'a' && text[*i] <= 'z') ||
 			   (text[*i] == '_'); ++*i)
@@ -95,7 +95,7 @@ INLINE item_t parsestring(char *text, uint64_t *i)
     text[*i] = '\0';
     ++*i;
 
-    dbgf("parsed string: '%s'\n", (char *)str.pointer);
+    dbgf("parsed string: '%s'\n", str.string);
 
     return str;
 }
@@ -112,7 +112,7 @@ INLINE int term(char *text, uint64_t *i, vars_t defs)
 	if (text[*i] == '$')
 	{
 		++*i;
-		char *var = parsestring(text, i).pointer;
+		char *var = parsestring(text, i).string;
 		dbgf("Parsed str in [] %s\n", var);
 		for (int j = 0; j < defs.length; j++)
 		{
@@ -183,7 +183,7 @@ item_t kv_parse(char *text, uint64_t *i, uint64_t length, vars_t defs)
     // results on most files. Anything over 64 is almost certain to slow
     // down the kv_parse
     uint64_t size = 4;
-    object.pointer = calloc(sizeof(pair_t), size);
+    object.object = calloc(sizeof(pair_t), size);
 
     skipws(text, i);
 
@@ -199,7 +199,7 @@ item_t kv_parse(char *text, uint64_t *i, uint64_t length, vars_t defs)
         if (object.length >= size)
         {
             size *= 2;
-            object.pointer = realloc(object.pointer, sizeof(pair_t) * size);
+            object.object = realloc(object.object, sizeof(pair_t) * size);
         }
 
         dbgf("got key, at '%s'\n", text + *i);
@@ -221,7 +221,7 @@ item_t kv_parse(char *text, uint64_t *i, uint64_t length, vars_t defs)
         else
         {
             value = parsestring(text, i);
-            dbgf("it was '%s'\n", (char *)((pair_t *)object.pointer)[object.length].value.pointer);
+            dbgf("it was '%s'\n", object.object[object.length].value.string);
         }
 
         dbgf("after sub-object, at: '%s', %ld\n", text + *i, *i);
@@ -230,8 +230,8 @@ item_t kv_parse(char *text, uint64_t *i, uint64_t length, vars_t defs)
 
 		if (cond)
 		{
-			((pair_t*)object.pointer)[object.length].key = key;
-			((pair_t*)object.pointer)[object.length].value = value;
+			object.object[object.length].key = key;
+			object.object[object.length].value = value;
 			object.length++;
 		}
 
@@ -249,7 +249,7 @@ void kv_printitem(item_t item, uint32_t depth)
 {
     if (item.type == TYPE_STRING)
     {
-        printf("\t\"%s\"\n", (char *)item.pointer);
+        printf("\t\"%s\"\n", item.string);
     }
     else if (item.type == TYPE_OBJECT)
     {
@@ -258,10 +258,10 @@ void kv_printitem(item_t item, uint32_t depth)
             printf("{ // %d items\n", item.length);
         for (uint32_t i = 0; i < item.length; i++)
         {
-            pair_t current = ((pair_t *)item.pointer)[i];
+            pair_t current = item.object[i];
             for (uint32_t j = 0; j < depth; j++)
                 printf("\t");
-            printf("\"%s\" ", (char *)current.key.pointer);
+            printf("\"%s\" ", current.key.string);
 			kv_printitem(current.value, depth + 1);
         }
         if (depth > 0)
@@ -279,8 +279,8 @@ item_t kv_get(item_t where, char *q)
     {
         for (int i = 0; i < where.length; i++)
         {
-            pair_t current = ((pair_t *)where.pointer)[i];
-            if (strcmp(current.key.pointer, q) == 0)
+            pair_t current = where.object[i];
+            if (strcmp(current.key.string, q) == 0)
             {
                 return current.value;
             }
@@ -296,10 +296,10 @@ void kv_freeitem(item_t item)
     {
         for (int i = 0; i < item.length; i++)
         {
-            pair_t current = ((pair_t *)item.pointer)[i];
+            pair_t current = item.object[i];
 			kv_freeitem(current.value);
         }
-        free(item.pointer);
+        free(item.object);
     }
 }
 

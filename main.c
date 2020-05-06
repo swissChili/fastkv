@@ -35,14 +35,14 @@ int main(int argc, char **argv)
 
     uint64_t i = 0;
 
-    vars_t defines = {
+	vars_t defines = {
 		.length = 3,
 		.vars = (char *[]) {
 			"X64",
 			"X86_64",
 			"LINUX"
 		}
-    };
+	};
 
     struct timeval start, end, printed;
     gettimeofday(&start, NULL);
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
         }
         else if (result.type == TYPE_STRING)
         {
-            printf("%s\n", (char *)result.pointer);
+            printf("%s\n", result.string);
             return 0;
         }
         else if (result.type == TYPE_OBJECT)

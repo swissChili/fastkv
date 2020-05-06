@@ -10,9 +10,15 @@ enum
     TYPE_OBJECT,
 };
 
+struct pair_t;
+
 typedef struct item_t
 {
-    void *pointer;
+	union
+	{
+		char *string;
+		struct pair_t *object;
+	};
     uint8_t type;
     uint32_t length;
 } item_t;
