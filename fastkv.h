@@ -5,28 +5,27 @@
 
 enum
 {
-    TYPE_ERROR = 0,
-    TYPE_STRING,
-    TYPE_OBJECT,
+	TYPE_ERROR = 0,
+	TYPE_STRING,
+	TYPE_OBJECT,
 };
 
 struct pair_t;
 
 typedef struct item_t
 {
-	union
-	{
+	union {
 		char *string;
 		struct pair_t *object;
 	};
-    uint8_t type;
-    uint32_t length;
+	uint8_t type;
+	uint32_t length;
 } item_t;
 
 typedef struct pair_t
 {
-    item_t key; // a string
-    item_t value;
+	item_t key; // a string
+	item_t value;
 } pair_t;
 
 typedef struct vars_t
