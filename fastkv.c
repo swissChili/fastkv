@@ -163,6 +163,7 @@ INLINE int expr(char *text, uint64_t *i, vars_t defs)
 INLINE int parsecond(char *text, uint64_t *i, uint64_t length, vars_t defs)
 {
 	skipws(text, i);
+	dbgf("Parsing condition, skipped ws, at '%.2s'\n", text + *i);
 	if (text[*i] == '[')
 	{
 		++*i;
@@ -176,6 +177,7 @@ INLINE int parsecond(char *text, uint64_t *i, uint64_t length, vars_t defs)
 			++*i;
 		return res;
 	}
+	return 1;
 }
 
 // slightly faster if you don't INLINE this function
