@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * Define FASKTV_NO_CONDITIONS to disable condition parsing
+ */
+
 #if !defined(LITTLE_ENDIAN) && !defined(BIG_ENDIAN)
 #ifndef _WIN32
 #include <endian.h>
@@ -102,6 +106,7 @@ INLINE item_t parsestring(char *text, uint64_t *i)
 	return str;
 }
 
+#ifndef FASTKV_NO_CONDITIONS
 INLINE int term(char *text, uint64_t *i, vars_t defs)
 {
 	int negate = 0;
@@ -179,6 +184,10 @@ INLINE int parsecond(char *text, uint64_t *i, uint64_t length, vars_t defs)
 	}
 	return 1;
 }
+
+#else
+#define parsecond(a, b, c, d) 1
+#endif
 
 // slightly faster if you don't INLINE this function
 item_t kv_parse(char *text, uint64_t *i, uint64_t length, vars_t defs)
