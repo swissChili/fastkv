@@ -193,16 +193,21 @@ INLINE int parsecond(char *text, uint64_t *i, uint64_t length, vars_t defs)
 item_t kv_parse(char *text, uint64_t *i, uint64_t length, vars_t defs)
 {
 	item_t object = {NULL, TYPE_OBJECT, 0};
-	// this is the biggest impact on optimization. 2-8 gives the best
-	// results on most files. Anything over 64 is almost certain to slow
-	// down the kv_parse
-	uint64_t size = 4;
-	object.object = (pair_t *)calloc(sizeof(pair_t), size);
+	// This is the size as a power of two, this used to just be an
+	// integer, but using a power of two means we can avoid 2 instances
+	// of costly multiplication. 1 << 2 == 4
+	uint32_t size_pow = 2;
+
+	dbgf("starting kv_parse\n");
+	dbgf("size_pow is %d, allocing bytes %ld\n", size_pow,
+		 sizeof(pair_t) << size_pow);
+	object.object = (pair_t *)calloc(sizeof(pair_t), 1 << size_pow);
 
 	skipws(text, i);
 
 	for (; text[*i] && *i < length;)
 	{
+		dbgf("size_pow is %d\n", size_pow);
 		if (text[*i] == '}')
 		{
 			++*i;
@@ -210,11 +215,14 @@ item_t kv_parse(char *text, uint64_t *i, uint64_t length, vars_t defs)
 			return object;
 		}
 		dbgf("continuing loop with %c (%d), i: %ld\n", text[*i], text[*i], *i);
-		if (object.length >= size)
+		if (object.length >= 1 << size_pow)
 		{
-			size *= 2;
+			size_pow++;
+
+			dbgf("size_pow is %d, reallocing bytes %ld\n", size_pow,
+				 sizeof(pair_t) << size_pow);
 			object.object =
-				(pair_t *)realloc(object.object, sizeof(pair_t) * size);
+				(pair_t *)realloc(object.object, sizeof(pair_t) << size_pow);
 		}
 
 		dbgf("got key, at '%s'\n", text + *i);
