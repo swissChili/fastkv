@@ -6,6 +6,7 @@
 
 /**
  * Define FASKTV_NO_CONDITIONS to disable condition parsing
+ * Define FASTKV_BULLET to remove most useful features
  */
 
 #if !defined(LITTLE_ENDIAN) && !defined(BIG_ENDIAN)
@@ -63,6 +64,7 @@ start:
 		}
 		goto start;
 	}
+#ifdef FASTKV_BULLET // No multi line comments
 	else if (*((uint16_t *)(text + *i)) == SLASH_STAR)
 	{
 		dbgf("Got a comment /*\n");
@@ -75,6 +77,7 @@ start:
 		*i += 2;
 		goto start;
 	}
+#endif
 }
 
 INLINE item_t parsestring(char *text, uint64_t *i)
@@ -249,16 +252,20 @@ item_t kv_parse(char *text, uint64_t *i, uint64_t length, vars_t defs)
 
 		dbgf("after sub-object, at: '%s', %ld\n", text + *i, *i);
 
+#ifndef FASTKV_NO_CONDITIONS
 		int cond = parsecond(text, i, length, defs);
 
 		if (cond)
+#endif
 		{
-			object.object[object.length].key = key;
+			object.object[object.length].key = key.string;
 			object.object[object.length].value = value;
 			object.length++;
 		}
 
+#ifndef FASTKV_NO_CONDITIONS
 		dbgf("[] checking cond: %d\n", cond);
+#endif
 		dbgf("Finished [] at %ld\n", *i);
 
 		skipws(text, i);
@@ -285,7 +292,7 @@ void kv_printitem(item_t item, uint32_t depth)
 			pair_t current = item.object[i];
 			for (uint32_t j = 0; j < depth; j++)
 				printf("\t");
-			printf("\"%s\" ", current.key.string);
+			printf("\"%s\" ", current.key);
 			kv_printitem(current.value, depth + 1);
 		}
 		if (depth > 0)
@@ -304,7 +311,7 @@ item_t kv_get(item_t where, char *q)
 		for (int i = 0; i < where.length; i++)
 		{
 			pair_t current = where.object[i];
-			if (strcmp(current.key.string, q) == 0)
+			if (strcmp(current.key, q) == 0)
 			{
 				return current.value;
 			}

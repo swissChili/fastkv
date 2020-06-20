@@ -5,9 +5,14 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
 option(NO_CONDITIONS "Disble condition parsing" OFF)
+option(BULLET "Bullet mode lol" OFF)
 
 if(NO_CONDITIONS)
 	add_compile_definitions(FASTKV_NO_CONDITIONS)
+endif()
+
+if(BULLET)
+	add_compile_definitions(FASTKV_BULLET)
 endif()
 
 add_library(libfastkv fastkv.h fastkv.c)

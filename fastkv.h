@@ -24,7 +24,7 @@ typedef struct item_t
 
 typedef struct pair_t
 {
-	item_t key; // a string
+	char *key; // a string
 	item_t value;
 } pair_t;
 
